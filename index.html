@@ -1,0 +1,207 @@
+<html>
+<head>
+	<title>Wilivro - Chat</title>
+
+	<script src="/socket.io/socket.io.js"></script>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	<script>
+		var socket = io.connect('http://192.168.0.153:8080');
+
+		socket.on('connect', function(){
+			var nome = getParameterByName('nome');
+
+			if (!nome || nome == '')
+			{
+				nome = prompt('Qual o seu nome?');
+			}
+			socket.emit('adduser', nome);
+			
+		});
+
+		socket.on('updatechat', function (username, data) {
+			$('#conversation').append('<b>'+username + ':</b> ' + data + '<br>');
+			//$('#conversation').scrollTo( 0, 999999, {queue:true} )
+			$('#conversation').animate({
+                     scrollTop: $('#conversation').find('br').length * 20
+                 },
+                 800);
+		});
+
+		socket.on('updaterooms', function(rooms, current_room) {
+			console.log(rooms);
+			$('#rooms').empty();
+			$.each(rooms, function(key, value) {
+				if(value == current_room){
+					$('#rooms').append('<div class="sala-box"><span>' + value + '</span></div>');
+				}
+				else {
+					$('#rooms').append('<div class="sala-box"><a href="#" onclick="switchRoom(\''+value+'\')">' + value + '</a></div>');
+				}
+			});
+
+			$('#rooms').append('<div><input type="text" id="txtRoom" placeholder="Nova Sala..."></input><div class="btn-ok" onclick="switchRoom()">OK</div></div>');
+		});
+
+		function switchRoom(room){
+			if (!room)
+			{
+				room = $('#txtRoom').val();
+			}
+			socket.emit('switchRoom', room);
+
+			$('#data').focus();
+		}
+
+		function getParameterByName(name)
+		{
+		  name = name.replace(/[\[]/, "\\\[").replace(/[\]]/, "\\\]");
+		  var regexS = "[\\?&]" + name + "=([^&#]*)";
+		  var regex = new RegExp(regexS);
+		  var results = regex.exec(window.location.search);
+		  if(results == null)
+		    return "";
+		  else
+		    return decodeURIComponent(results[1].replace(/\+/g, " "));
+		}
+
+		$(function(){
+			$('#datasend').click( function() {
+				var message = $('#data').val();
+				if (message && message.trim() != '')
+				{
+					$('#data').val('');
+					socket.emit('sendchat', message);
+
+				}
+
+				$('#data').focus();
+			});
+
+			$('#data').keypress(function(e) {
+				if(e.which == 13) {
+					$(this).blur();
+					$('#datasend').focus().click();
+				}
+			});
+
+
+			$('#data').focus();
+		});
+
+	</script>
+
+	<style type="text/css">
+		body
+		{
+				height:100%;
+				overflow: hidden;
+		}
+
+		*
+		{
+			margin: 0;
+			font-family: 'Trebuchet MS';
+		}
+		.sala-box
+		{
+			background-color: #2F3888;
+			border-top-right-radius: 10em;
+			border-bottom-right-radius: 10em;
+			width: 80%;
+			height: 23px;
+			margin-bottom: 20px;
+			color: #fff;
+
+		}
+		.sala-box a, .sala-box span
+		{
+			color: #fff;
+			text-decoration: none;
+			margin: 15px 0 0 25px;
+			cursor: pointer;
+
+		}
+		#txtRoom
+		{
+			margin-left: 5px;
+			width: 60%;
+		}
+		.btn-ok
+		{
+			color: #fff;
+			background-color: #2F3888;
+			border-radius: 100px;
+			width: 25px;
+			height: 22px;
+			padding: 5px 0 0 3px;
+			display: inline-block;
+			margin-left: 5px;
+			cursor: pointer;
+
+		}
+		#datasend
+		{
+			border-bottom-left-radius: 1em;
+			border-bottom-right-radius: 1em;
+			border: none;
+			background-color: #F2D118;
+			float:right;
+
+		}
+		#conversation
+		{
+			overflow: scroll;
+		}
+		div.fullscreen{
+		    display:block;
+
+		    /*set the div in the top-left corner of the screen*/
+		    position:absolute;
+		    top:0;
+		    left:0;
+		    
+		    /*set the width and height to 100% of the screen*/
+		    width:100%;
+		    height:100%;
+		    overflow:hidden;
+		  }
+	</style>
+
+</head>
+<body>
+
+	<div style="background-color:#2F3888;height:15%;width:100%;display:block;top:0;">
+		<div style="color:#fff;margin:34px 0 0 196px;font-size:18pt;font-family:Trebuchet MS;clear:both;float:left;">A TECNOLOGIA A SERVIÇO DA FORMAÇÃO PROFISSIONAL</div>
+	</div>
+
+	<div style="background-color:#F2D118;height:12px;width:100%;display:block;top:96px;"></div>
+
+	<div style="height:auto;position:relative;"> 
+		<div style="position:absolute;bottom:0;left:0;width:20%;border-right:1px dotted black;height:100%;overflow:scroll-y;">
+
+			<div id="rooms" ></div>
+		</div>
+
+		<div style="position:absolute;bottom:0;right:0;width:80%;height:100%;min-height: 100%;overflow:scroll-y;">
+			<div style="margin: 0 100px 50px;height:100px">
+				<div id="conversation" style="height:50%"></div>
+				<div id="inputs" style="height:20%">
+					
+					<textarea id="data" style="width:100%;height:100%;"> </textarea>
+					<input type="button" id="datasend" value="ENVIAR" />
+
+				</div>
+
+			</div>
+			
+		</div>
+		
+	</div>
+	
+
+
+	
+
+
+
+
