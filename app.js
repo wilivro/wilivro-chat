@@ -8,6 +8,11 @@ app.get('/', function (req, res) {
   res.sendfile(__dirname + '/index.html');
 });
 
+// routing
+app.get('/jquery.js', function (req, res) {
+  res.sendfile(__dirname + '/jquery.js');
+});
+
 // usernames which are currently connected to the chat
 var usernames = {};
 
@@ -46,6 +51,7 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on('switchRoom', function(newroom){
 
+		
 		rooms.push(newroom);
 		rooms = rooms.unique();
 
